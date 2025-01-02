@@ -2,6 +2,10 @@
 - [2024-10](2024-10.md)
 - [2024-11](2024-11.md)
 - [2024-12](2024-12.md)
+- [2025-01](2025-01.md)
+
+# Map
+![Map](./img.svg)
 
 # My recommend papers!
 1. Steven G. Parker, James Bigler, Andreas Dietrich, Heiko Friedrich, Jared Hoberock, David Luebke, David McAllister, Morgan McGuire, Keith Morley, Austin Robison, and Martin Stich. 2010. OptiX: a general purpose ray tracing engine. ACM Trans. Graph. 29, 4, Article 66 (July 2010), 13 pages. https://doi.org/10.1145/1778765.1778803 - ⭐️⭐️⭐️⭐️⭐️
