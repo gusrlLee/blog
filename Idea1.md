@@ -50,6 +50,55 @@
             * $L_r(x, \Psi_r) = \int_\Omega f_r(x, \Psi_r, \Psi_i) \frac{d^2 \Phi_i(x, \Psi_i)}{dA d\omega_i} d\omega_i \approx \sum^N_{p = 1} f_r(x, \Psi_r, \Psi_{i,p}) \frac{\Delta\Psi_p(x, \Psi_{i,p})}{\pi r^2}$ 
             * 기존 Monte Carlo estimation 과 매우 유사
     * **Hachisuka et al. (2008), "Progressive pßhoton mapping"**
+      * Takeaways
+        * Prgressive photon mapping is a multi-pass algorithm:
+          * first pass : Ray tracing pass 
+          * second pass : All subsequent passes use photon tracing pass 
+        * PPM show that progressive photon mapping is particularly robust in scenes with complex caustics illumination, 
+        and it is more efficient than methods based on Monte Carlo ray tracing such as BPT, MLT.
+      * Paper contexts 
+        * Introduction 
+          * Monte Carlo based methods can simulate both specular and diffuse materials, 
+          but there is one combination of these materials that is particularly problematic for most of the methods.
+          This combination involves light being transported along a specular to diffuse to specular path (SDS path) before being seen by the eye.
+          * SDS paths are particularly challenging when the light source is small since the probability of sampling the light 
+          through the specular material is low in unbiased Monte Carlo ray tracing methods such as PT, BPT, MLT.
+          * Proposed problem : 
+          Photon mapping is a consistent algorithm which is good at simulating caustics and SDS paths. 
+          However, photon mapping becomes very costly for scenes dominated by caustics illumination since the caustics are simulated by directly visualizing the photon map.
+          * To avoid noise it is necessary to use a large number of photons 
+          and the accuracy is limited by the memory avaiable for the photon map.
+          * In this paper we present a progressive photon mapping algorithm that makes it possible to robustly simulate global illumination 
+          including SDS paths with arbitrary accuarcy without requiring infinite memory.
+        * Progressive Photon Mapping 
+          * The main idea in progressive photon mappng is to reorganize the standard photon mapping algorithm based on the conditions of consistency,
+          in order to compute a global illumination solution with arbitrary accuracy without storing the full photon map in memory.
+          * Prgressive photon mapping is a multi-pass algorithm:
+            * first pass : Ray tracing pass 
+              * It uses standard ray tracing to find all the surfaces in the scene visible through each pixel in the image (or a set of pixels).
+              * Note, that each ray path includes all specular bounces until the first non-specular surface seen.
+            * second pass : All subsequent passes use photon tracing pass 
+              * This step is used to accumulate photon power at the hit points found in the ray tracing pass.
+              * Once the contribution of the photons have been recorded they are no longer needed, 
+              and we can discard all photons and proceed with a new photon tracng pass.
+        * Progressive Radiance Estimation 
+          * The key insight that makes this possible is a new technique for reducing the radius in the radiance estimate at each hit point,
+          while increasing the number of accumulated photons.
+          * Radius Reduction 
+            * new photon density = $\hat{d}(x) = \frac{N(x) + M (x)}{\pi R(x)^2}$
+              * $N(x)$ : the number of photon accumulated within this radius
+              * $M(x)$ : Find $M(x)$ photons within the radius $R(x)$
+              * $\hat{N} = N(x) + \alpha M(x)$
+              * $\hat{R}(x) = R(x) - d R(x) = R(x) \sqrt{\frac{N(x) + \alpha M(x)}{N(x) + M(x)}}$
+          * Flux Correction 
+            * $N(x) \to \tau_N(x, \vec{\omega}) = \sum^{N(x)}_{p=1} f_r (x, \vec{\omega}, \vec{\omega}_p) \phi_p'(x_p, \vec{\omega}_p)$
+            * $M(x) \to \tau_M(x, \vec{\omega}) = \sum^{M(x)}_{p=1} f_r (x, \vec{\omega}, \vec{\omega}_p) \phi_p'(x_p, \vec{\omega}_p)$
+            * $\tau_{\hat{N}} (x, \vec{\omega}) = \tau_{N+M}(x, \vec{\omega}) \frac{N(x) + \alpha M(x)}{N(x) + M(x)}$
+            * $\tau_{N+M} = \tau_N(x, \vec{\omega}) + \tau_M(x, \vec{\omega})$
+            * $\tau_{\hat{N}} (x, \vec{\omega})$ is the reduced value for the reduced radius disc corresponding to $\hat{N}(x)$ photons.
+          * Radiance Evaluation 
+            * The radiance is evaluated as follows :
+              * $L(x, \vec{\omega}) = \frac{1}{\pi R(x)^2} \frac{\tau(x, \vec{\omega})}{N_{emitted}}$
     * **Hachisuka and Jensen (2009), "Stochastic progressive photon mapping."**
     * **Hachisuka and Jensen (2010), "Parallel progressive photon mapping on GPUs."**
     * **Knaus (2011), "Progressive photon mapping: A A probabilistic approach."**
