@@ -100,6 +100,41 @@
             * The radiance is evaluated as follows :
               * $L(x, \vec{\omega}) = \frac{1}{\pi R(x)^2} \frac{\tau(x, \vec{\omega})}{N_{emitted}}$
     * **Hachisuka and Jensen (2009), "Stochastic progressive photon mapping."**
+      * Takeaways
+        * We have presented a new formulation of progressive photon mapping, called stochastic progressive photon mapping, 
+        that makes it possible to compute the correct average radiance value over a region.
+        * new formulation : progressive photon mapping by adding a new distributed ray tracing pass that generate new hit points 
+        after each photon pass.
+      * Paper contexts
+        * Introduction 
+          * The results of PM suffer from bias, which appears as low frequency noise in the rendered images. 
+          Moreover, computing the correct solutions requires storing an infinite number of photons in the limits.
+          * Progressive photon mapping (PPM) solves this issue by using progressive refinement,
+          and makes it possible to compute a correct solutions without storing any photons.
+          Moreover, the method retains the robustness of photon mapping.
+          * Althought each radiance estimate in progressive photon mapping converges to the correct radiance, 
+          the algorithm is restricted to computing the correct radiance value at a point. 
+          This property limits the application of progressive photon mapping because we often need to compute the correct average radiance value over a region.
+          * In this paper, we present a new formulation of progressive photon mapping that enables computing the correct average radiance value over a region.
+        * Overview 
+          * Stochasitc Progressive Photon Mapping (SPPM)
+            * The motivation is that we need to compute the average radiance value over a region in order to render distributed ray tracing effects.
+            * Our idea is to use shared statistics over a region that we would like to compute the average radiance value for.
+            * the average radiance value $L(S, \vec{\omega}) \approx \frac{\tau_i(S, \vec{\omega})}{N_e(i)\pi R_i(S)^2}$
+              * $\tau_i{S, \vec{\omega}}$ is the shared accumulated flux over the region $S$
+              * $R_i(S)$ is the shared search radius
+            * The updating procedure of the shared statistics is 
+              * $\vec{x}_i$ : is a randomly generated position within $S$ and $N_i(S)$ is the shared local photon count.
+              * $N_{i+1} = N_i(S) + \alpha M_i(\vec{x}_i)$
+              * $R_{i+1}(S) = R_i(S) \sqrt{\frac{N_i(S) + \alpha M_i(\vec{x}_i)}{N_i(S) + M_i(\vec{x}_i)}}$
+              * $\Phi_i (\vec{x}_i, \vec{\omega}) = \sum^{M_i(\vec{x}_i)}_{p=1}f_r(\vec{x}_i, \vec{\omega}, \vec{\omega}_p)\Phi_p(\vec{x}_p, \vec{\omega}_p)$
+              * $\tau_{i+1} (S, \vec{\omega}) = (\tau_i(S, \vec{\omega}) + \Phi_i(\vec{x}_i, \vec{\omega})) \frac{R_{i+1}(S)^2}{R_i(S)^2}$
+            * Stochastic Radiance Estimate 
+              * Our formulation assumes that the initial radius $R_0$ is constant within $S$,
+              and the value of $\alpha$ is also constant within $S$.
+              * $R_{i+1}(\vec{x}) = R_i(\vec{x})C_p$
+            * Sec 4.1 Shared Radius and Sec 4.2 Shared Accumulated Flux are derivation.
+
     * **Hachisuka and Jensen (2010), "Parallel progressive photon mapping on GPUs."**
     * **Knaus (2011), "Progressive photon mapping: A A probabilistic approach."**
     * **Tokuyoshi and Jensen (2011), "Robust Adaptive Photon Tracing using Photon Path Visibility"**
@@ -138,3 +173,6 @@
   * Ray coherence & scheduling (we have to find more reference about this mehtod.)
     * **Navrátil et al. (2007), "Dynamic ray scheduling to improve ray coherence and bandwidth utilization"**
     * **Lee et al. (2017), "Vectorized Production Path Tracing"**
+
+  * CPU-GPU Hybrid method
+    * **Barringer et al. (2017), "Ray Accelerator: Efficient and Flexible Ray Tracing on a Heterogeneous Architecture"**
