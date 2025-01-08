@@ -4,6 +4,9 @@
 - [2024-12](2024-12.md)
 - [2025-01](2025-01.md)
 
+# Books
+- [Ray Tracing: The Next Week](./RTNW.md)
+
 # Mind-map
 - [Idea1](./Ref.html)
 

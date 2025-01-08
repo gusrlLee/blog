@@ -49,7 +49,7 @@
             * we can integrate the information into the rendering equation as follows:  
             * $L_r(x, \Psi_r) = \int_\Omega f_r(x, \Psi_r, \Psi_i) \frac{d^2 \Phi_i(x, \Psi_i)}{dA d\omega_i} d\omega_i \approx \sum^N_{p = 1} f_r(x, \Psi_r, \Psi_{i,p}) \frac{\Delta\Psi_p(x, \Psi_{i,p})}{\pi r^2}$ 
             * 기존 Monte Carlo estimation 과 매우 유사
-    * **Hachisuka et al. (2008), "Progressive pßhoton mapping"**
+    * **Hachisuka et al. (2008), "Progressive photon mapping"**
       * Takeaways
         * Prgressive photon mapping is a multi-pass algorithm:
           * first pass : Ray tracing pass 
@@ -134,9 +134,81 @@
               and the value of $\alpha$ is also constant within $S$.
               * $R_{i+1}(\vec{x}) = R_i(\vec{x})C_p$
             * Sec 4.1 Shared Radius and Sec 4.2 Shared Accumulated Flux are derivation.
-
     * **Hachisuka and Jensen (2010), "Parallel progressive photon mapping on GPUs."**
-    * **Knaus (2011), "Progressive photon mapping: A A probabilistic approach."**
+      * Takeaways
+        * We present a data-parallel implementation of progressive photon mapping on GPUs.
+            * The key contribution is a new stochastic spatial hashing scheme that achieves a data-parallel construction of a photon map and an efficient range query of a photon map on GPUs.
+            * i) hash, ii) grid
+      * Paper contexts 
+        * Introduction 
+          * However, an efficient implementation of progressive photon mapping on GPUs poses some challenges.
+          * In particular, we need a fast construction of photon maps and 
+          efficient range query of photons on GPUs since the algorithm repeatedly constructs and uses a photon map.
+          * We present a data-parallel implementation of progressive photon mapping on GPUs.
+            * The key contribution is a new stochastic spatial hashing scheme that achieves a data-parallel construction of a photon map and an efficient range query of a photon map on GPUs.
+        * Method 
+          * Our implementation uses spatial hashing for photon maps.
+          * Creating a list is not suitable for GPUs because this is a dependent and serial process.
+            * Our solution is to stochastically store a single photon instead of storing a list photons at each hash entry.
+          * More precisely, given $n$ photons that would be mapped to the same hash entry, 
+          we select one photon according to the uniform probability $p(x) = \frac{1}{n}$. 
+            * To keep the result consistent, stored photon flux is now divided by the probability $p(x) = \frac{1}{n}$.
+            * we can ignore hash collisionn.
+          * We can also perform range query of photons just by looking at grid cells that intersect with a sphere 
+          defined by query position and query radius.
+    * **Knaus (2011), "Progressive photon mapping: A probabilistic approach."**
+      * Takeaways
+        * PPM의 bias를 없애기 위한 probabilistic approach를 적용
+        * PM에서 가능한 variance와 expected 에 대한 수식 가지고 있음
+        * $\bar{c}_N = \frac{1}{N}\sum^N_{i=1} \frac{1}{p_e(x_i, \omega_i)} W(x_i, \omega_i)(L(x_i,\omega_i) + \epsilon_i). \to Eq. (7)$
+      * Paper contexts
+        * Introduction 
+          * One of the main advantage of photon mapping is that, at equal computational cost, 
+          it can often produce images with less noise than other Monte Carlo algorithms.
+          * However, it is biased, which means that the expected error of any approximation with a limited number of samples is nonzero.
+          * In this article, we introduce a probabilistic derivation of progressive photon mapping.
+            * The key property of our approach is that it does not require the maintenance of local statistic.
+            Therefore, we could call our approach memoryless progressive photon mapping. $\to$ MPPM
+        * Problem formulation 
+          * We use a probabilistic framework that does not rely on assumptions about a specific kernel in the photon radiance estimate.
+          It also does not rely on the maintenance of local statistics.
+          * Our goal is to compute pixel value $c$ of the form : $c = \int W(x, \omega)L(x, \omega)dxdw \to Eq. (6)$
+          * 4.1 Monte Carlo Approximation and Photon Maps (Paper와 같이 읽기)
+            * A main issue in conventional photon mapping is that there is a trade-off between the variance, 
+            or noise, and the expected error, or bias, in the radiance estimate.
+            * One can either achieve a low variance or a low expected error, but not both.
+            * The main insight of progressive photon mapping is that we can obtain a solution with, in the limit,
+            vanishing variance and expected error by averaging the results over many photon maps.
+            * To explain how this is possible
+              * the evaluation of Eq. (6) as a Monte Carlo estimation 
+              $c = \int W(x, \omega)L(x, \omega)dxdw. \to Eq. (6)$
+              * we omit the arguments of the error using the shorthand $\epsilon_i = \epsilon(x, r_i)$.
+              Using this model, our Monte Carlo estimate is :
+              $\bar{c}_N = \frac{1}{N}\sum^N_{i=1} \frac{1}{p_e(x_i, \omega_i)} W(x_i, \omega_i)(L(x_i,\omega_i) + \epsilon_i). \to Eq. (7)$
+                * $\bar{c}_N$ denotes the estimate for a pixel value using $N$ samples, that is, eye paths.
+                * The sample $(x_i, \omega_i)$ denote position and direction of surface intersections of paths generated by ray tracing starting form the eye, 
+                their probabilty density is $p_e(x_i, \omega_i)$
+              * $\bar{\epsilon}_N = \frac{1}{N} \sum^N_{i=1} \epsilon_i. \to Eq. (8)$
+              * $as N \to \infty \to Eq. (9)$
+                * $Var[\bar{\epsilon}_N] \to 0 \Rightarrow Var[\bar{c}_N] \to 0$
+                * $E[\bar{\epsilon_N} \to 0 \Rightarrow E[\bar{c}_N] \to 0]$
+          * Achieving Convergence
+            * The main idea of progressive photon mapping is to let the variance of the radiance estimate inicreate by a small factor in each step, but such that in average it still vanishes.
+            * Variance 
+              * $Var[\epsilon(x, r)] \approx \frac{(Var[\gamma] + E[\gamma]^2)p_l(x)}{Mr^2}\int_{\mathbb{R}^2} k(\psi)^d\psi$
+            * Exepected Error
+              * $E[\epsilon(x, r)] = r^2E[\gamma]\tau$
+            * 증명이 작성되어 있는 Sec.
+        * Algorithm
+          * 1. generate photon map once
+          * 2. trace path from eye until diffuse surface is hit
+          * 3. hit position and direction are $(x_i, \omega_i)$
+          * 4. path contribution is $W(x_i, \omega_i)$
+          * 5. path probability density is $p_e(x_i, \omega_i)$
+          * 6. get current radius $r_i$ from reference $r_1$ and Eq. 15
+          * 7. obtain radiance estimate $L(x_i, \omega_i) + \epsilon_i$
+          * 8. update pixel value, Eq. 7
+          * 9. iteration about all pixels (2-9)
     * **Tokuyoshi and Jensen (2011), "Robust Adaptive Photon Tracing using Photon Path Visibility"**
     * **Georgiev et al. (2012), "Light transport simulation with vertex connection and merging."**
     * **Mara et al. (2013), "Toward practical real-time photon mapping: Efficient GPU density estimation."**
