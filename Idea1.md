@@ -275,14 +275,14 @@
           an overview of the method that we use, which is a controlled Markov chain Monte Carlo method.
             * The idea of a controlled Markov chain Monte Carlo method is to adjust the parameters of given fixed mutation
             strategies based on the previous samples.
-            * $\vec{\Theta}_{i+1} = \vec{\Theta}_i + H(i, \vec{Theta}_i, \vec{u}_i, ..., \vec{u}_1). Eq. (6)$ 
+            * $\vec{\Theta}_{i+1} = \vec{\Theta}_i + H(i, \vec{\Theta}_i, \vec{u}_i, ..., \vec{u}_1). Eq. (6)$ 
               * $\vec{\Theta}$ : the parameters value
               * $\vec{u}_i, ... , \vec{u}_1$ : all samples up to the i th iteration
               * $H$ is a function that computes the changes of the parameters accroding to this history of samples
               and the last parameter values $\vec{\Theta}_i$
               * One important condition that $H$ needs to satisfy in order to keep the sample distribution intact is 
               diminishing adaptation principle.
-              * $\lim_{i \to \infty} H(i, \vec{Theta}_i, \vec{u}_i, ..., \vec{u}_1) = 0.$
+              * $\lim_{i \to \infty} H(i, \vec{\Theta}_i, \vec{u}_i, ..., \vec{u}_1) = 0.$
             * one simple approach that is used in existing adaptive Markov chain Monte Carlo methods is changing the para-
             meters such as that an _acceptance ratio_ of Markov chains reaches the desired value.
               * The acceptance ratio is the fraction of accepted mutations over all the mutations.
@@ -294,7 +294,7 @@
             * $\Delta u = sgn (2\xi_0 - 1) \xi_1^{\frac{1}{\Theta_i}+1}$
               * $\Theta_i$ is the adaptive mutation size at the $i$ th Markov chain
               * $sgn(x)$ is a function that returns the sign of $x$
-              * $\xi_0 and \xi_1$ are uniform random number within $(0, 1)$
+              * $\xi_0 \;\; and \;\; \xi_1$ are uniform random number within $(0, 1)$
             * we use a simple form of a controlled Markov chain Monte Carlo method, which adjusts a single mutation parameter in a power function.
             * acceptane probability is 
               * $a(\vec{u} + \Delta \vec{u} \leftarrow \vec{u}) = \frac{F(\vec{u} + \Delta \vec{u})}{F(\vec{u})} = \frac{V(\vec{u} + \Delta \vec{u})}{V(\vec{u})} = V(\vec{u} + \Delta\vec{u}).$
