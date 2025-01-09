@@ -201,7 +201,7 @@
             * 증명이 작성되어 있는 Sec.
         * Algorithm
           * 1. generate photon map once
-          * 2. trace path from eye until diffuse surface is hit
+          * 2. trace path from eye until diffuse surfac is hit
           * 3. hit position and direction are $(x_i, \omega_i)$
           * 4. path contribution is $W(x_i, \omega_i)$
           * 5. path probability density is $p_e(x_i, \omega_i)$
@@ -210,6 +210,96 @@
           * 8. update pixel value, Eq. 7
           * 9. iteration about all pixels (2-9)
     * **Tokuyoshi and Jensen (2011), "Robust Adaptive Photon Tracing using Photon Path Visibility"**
+      * Takeaways
+        * We present a new adaptve photon tracing algorithm which can handle illumination settings 
+        that are considered difficult for photon tracing approaches such as outdoor scenes, close-ups of a small part of 
+        an illuminated region, and illumination coming through a samll gap.
+        * The key contribution in our algorithm is the use of visibility of photon path as the importance function which
+        ensures that our sampling algorithm focuses on paths that are visible from the given viewpoint.
+          * Adaptive Markov chain Monte Carlo methods + Replica exchange Monte Carlo method
+      * Paper contexts 
+        * Introduction
+          * Progressive photon mapping can handle specular-diffuse-specular light transport robustly, however, it becomes 
+          inefficient in scenes where only a samll part of the lit surfaces can bee seen in the rendered image.
+          * In general, this type of scene is problematic for any photon tracing based methods including progressive 
+          photon mapping and the original photon mapping algorithm. 
+          * In this paper, we propose a simple, automatic and robust photon tracing algorithm that extends the types of 
+          scenes that can be rendered efficiently with photon tracing based methods.
+            * The key idea is a new importance sampling function solely based on the visibility information of each photon path.
+            * In order to generate samples from this importance function, we apply two recent developments in Markov chain
+            Monte Carlo methods: adaptive Markov chain sampling and replica exchange.
+        * Method 
+          * Overview
+            * The overall idea of our algorithm is to define a visibility function of photon paths and to perform importance 
+            sampling on this visibility function.
+            * We define the space of this function as a hypercube.
+            * We then employ local importance sampling for choosing light sources and sampling BRDFs and Russian roulette, 
+            in order to generate a photon path from given random numbers.
+              * In order to efficiently sample this function, we propose a combination of adaptive Markov chain sampling 
+              and replica exchange.
+          * Sampling Space and Visibility Function 
+            * we define a photon path visibility function, $V(\vec{u})$, $\vec{u}$ a photon path in the hypercube.
+              * where $V(\vec{u}) = 1$ if any photon due to this photon path contributes to the image and $V(\vec{u} = 0)$ 
+              otherwise.
+            * The importance function is simply the normalized version of this visibility function $V(\vec{u})$.
+            * We can also easily evaluate $V\vec{u}$ by checking if a photon path splats any photon into any of measurement 
+            point in the photon splatting implementation of progressive photon mapping.
+          * Photon Splatting Implementation 
+            * we construct an acceleration data structure of measurement points, not a photon map.
+            * In other words, this algorithm is splatting photons into the measurement points, instead of gathering photons
+            at each measurement point.
+            * We use this splatting implementation throughout the paper, in order to immediately utilize the visibility 
+            information of the current photon path to the next photon tracing.
+        * _Replica exchange Monte Carlo_
+          * Overview
+            * The exchange Monte Carlo method is an extended ensemble Monte Carlo method where we sample Markov chains from 
+            multiple distributions simultaneously.
+            * The basic idea is facilitating exploration of the sampling space by bridging multiple distant peaks using 
+            another smooth importance function.
+              * For example, if we use a regular Markov chain Monte Carlo method to sample from an importance sampling 
+              function with two peaks seperated by zeros, the Markov chain can get trapped within an one peak for many 
+              interations. The replica exchange Monte Carlo meethod can avoid this problem by introducing an extra 
+              Markov chain, for instance, from a uniform distribution.
+            * The key idea of the replica exchange Monte Carlo method is to perform an inter-distribution exchange such that 
+            the above product distribution of samples remains unchanged.
+          * Our formulation 
+            * the distributions with probability $r(\vec{u}_I, \vec{u}_F) = \frac{F(\vec{u}_I)I(\vec{u}_F)}{F(\vec{u}_F)I(\vec{u}_I)}$
+              * $I(\vec{u}_I) = I(\vec{u}_F) = 1$
+              * $r(\vec{u}_I, \vec{u}_F) = \frac{F(\vec{u}_I)1}{\frac{1}{V_c}1} = V(\vec{u}_I)$ 
+          * Progressive Estimation of the Normalized Term
+            * $V_c = \int V(\vec{u})d\vec{u} \approx \frac{N_{I, V(\vec{u} = 1)}}{N_{I, total}}.$
+        * Adaptive Markov Chain Monte Carlo
+          * Adaptive Markov chain Monte Carlo methods provide a way to automatically adjust mutation strategies during the 
+          computation by learning the importance function as we sample. 
+          * Since adaptive Markov chain Monte Carlo methods in general cover many different variantions, we only provide 
+          an overview of the method that we use, which is a controlled Markov chain Monte Carlo method.
+            * The idea of a controlled Markov chain Monte Carlo method is to adjust the parameters of given fixed mutation
+            strategies based on the previous samples.
+            * $\vec{\Theta}_{i+1} = \vec{\Theta}_i + H(i, \vec{Theta}_i, \vec{u}_i, ..., \vec{u}_1). Eq. (6)$ 
+              * $\vec{\Theta}$ : the parameters value
+              * $\vec{u}_i, ... , \vec{u}_1$ : all samples up to the i th iteration
+              * $H$ is a function that computes the changes of the parameters accroding to this history of samples
+              and the last parameter values $\vec{\Theta}_i$
+              * One important condition that $H$ needs to satisfy in order to keep the sample distribution intact is 
+              diminishing adaptation principle.
+              * $\lim_{i \to \infty} H(i, \vec{Theta}_i, \vec{u}_i, ..., \vec{u}_1) = 0.$
+            * one simple approach that is used in existing adaptive Markov chain Monte Carlo methods is changing the para-
+            meters such as that an _acceptance ratio_ of Markov chains reaches the desired value.
+              * The acceptance ratio is the fraction of accepted mutations over all the mutations.
+              * We can thus simplyify Eq. (6) as :
+                * $\vec{\Theta}_{i+1} = \vec{\Theta}_i + H(i, A^*, A_i). Eq. (8)$ 
+                * $A^*$ is the target acceptance ratio 
+                * $A_i$ is the acceptance ratio of samples up to $i$.
+          * Our Formulation 
+            * $\Delta u = sgn (2\xi_0 - 1) \xi_1^{\frac{1}{\Theta_i}+1}$
+              * $\Theta_i$ is the adaptive mutation size at the $i$ th Markov chain
+              * $sgn(x)$ is a function that returns the sign of $x$
+              * $\xi_0 and \xi_1$ are uniform random number within $(0, 1)$
+            * we use a simple form of a controlled Markov chain Monte Carlo method, which adjusts a single mutation parameter in a power function.
+            * acceptane probability is 
+              * $a(\vec{u} + \Delta \vec{u} \leftarrow \vec{u}) = \frac{F(\vec{u} + \Delta \vec{u})}{F(\vec{u})} = \frac{V(\vec{u} + \Delta \vec{u})}{V(\vec{u})} = V(\vec{u} + \Delta\vec{u}).$
+            * then update $\Theta_i$ as follows:
+              * $\Theta_{i+1} = \Theta_i + \gamma_i(A_i - A^*)$        
     * **Georgiev et al. (2012), "Light transport simulation with vertex connection and merging."**
     * **Mara et al. (2013), "Toward practical real-time photon mapping: Efficient GPU density estimation."**
     * **Davidovič et al. (2014), "Progressive light transport simulation on the GPU: Survey and improvements"**
