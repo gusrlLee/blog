@@ -301,6 +301,24 @@
             * then update $\Theta_i$ as follows:
               * $\Theta_{i+1} = \Theta_i + \gamma_i(A_i - A^*)$        
     * **Georgiev et al. (2012), "Light transport simulation with vertex connection and merging."**
+      * Takeaways
+      * Paper contexts
+        * Introduction
+          * However, its inefficiency under diffuse lighting and its relatively low order of convergence 
+          make progressive photon mapping impractical as a general global illumination solution.
+          * Intuitively, a combination of BPT and PM would be beneficial, as the two algorithms complement each other in terms of performance under different lighting conditions.
+            * However, as discussed by Veach and Guibas [1995] and shown in Fig. 2, such as heuristic combination can be far from optimal. 
+            Moreover, an adaptation of these heuristics to glossy reflectance is not obvious.
+          * Judging from the success of multiple importance sampling in improving the robustness of BPT compared to its initial formulation,
+          we can expect that a MIS-based combination of BPT and PM will yield a more robust solution than the aforementioned heuristics.
+          * contribution
+            * In this paper, we present an integration of bidirection path tracing and photon mapping into a framework that can efficiently handle a wide range of illumination effects.
+            * Our new reformulation of photon mapping as a path sampling technique allow us to employ multiple importance sampling to combine the two methods in a more robust rendering algorithm that alleviates the problem of insufficient techniques.
+        * Vertex Merging 
+          * Our goal is to combine photon mapping (PM) with bidirectional path tracing (BPT) into a more robust algorithm via multiple-importance sampling (MIS). 
+            * The first step is to formulate the two algorithms in a common mathematical language, for which we choose the path integral framework, reviewed above.
+            * We refer to the path sampling techniques derived from PM as vertex merging (VM), as one can intuitively think of the radiance estimate (5) as mergin the path vertices correspondng to a photon and the radiance estimate ocation within a small neighborhood. 
+          
     * **Mara et al. (2013), "Toward practical real-time photon mapping: Efficient GPU density estimation."**
     * **Davidovič et al. (2014), "Progressive light transport simulation on the GPU: Survey and improvements"**
     * **Evangelou et al. (2021), "Fast radius search exploiting ray tracing frameworks."**
