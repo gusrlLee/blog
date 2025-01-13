@@ -5,7 +5,7 @@
 - [2025-01](2025-01.md)
 
 # Books
-
+- [Ray Tracing: The Rest of Your Life](./RTRL.md)
 
 # Mind-map
 - [Idea1](./Ref.html)

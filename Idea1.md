@@ -302,23 +302,38 @@
               * $\Theta_{i+1} = \Theta_i + \gamma_i(A_i - A^*)$        
     * **Georgiev et al. (2012), "Light transport simulation with vertex connection and merging."**
       * Takeaways
+        * Although efficient global illumination algorithm exist, an acceptable approximation error in a resonable amount of time is usally only achieved for 
+        specific types of input scenes. 
+        * To address this problem, we present a reformulation of photon mapping as a bidirectional path sampling technique for Monte Carlo light transport simulation.
+        * BPT와 PM을 결합하기 위해 $\bar{x}_s$를 추가한 것이 keypoint!
       * Paper contexts
         * Introduction
-          * However, its inefficiency under diffuse lighting and its relatively low order of convergence 
-          make progressive photon mapping impractical as a general global illumination solution.
-          * Intuitively, a combination of BPT and PM would be beneficial, as the two algorithms complement each other in terms of performance under different lighting conditions.
-            * However, as discussed by Veach and Guibas [1995] and shown in Fig. 2, such as heuristic combination can be far from optimal. 
-            Moreover, an adaptation of these heuristics to glossy reflectance is not obvious.
-          * Judging from the success of multiple importance sampling in improving the robustness of BPT compared to its initial formulation,
-          we can expect that a MIS-based combination of BPT and PM will yield a more robust solution than the aforementioned heuristics.
-          * contribution
-            * In this paper, we present an integration of bidirection path tracing and photon mapping into a framework that can efficiently handle a wide range of illumination effects.
-            * Our new reformulation of photon mapping as a path sampling technique allow us to employ multiple importance sampling to combine the two methods in a more robust rendering algorithm that alleviates the problem of insufficient techniques.
+          * Efficient handling of SDS paths, on the other hand, has long been demonstrated with photon mapping (PM).
+          * Indeed, PM has traditionally been combined with some of BPT's path sampling techniques through heuristic with some of BPT's path sampling techniques
+          through heuristic such as global and cuastic maps, and final gathering.
+            * Such a heuristic combintaiton can be far from optimal. Moreover, an adaptation of these heuristics to glossy reflectance is not obvious.
+            * we can expect that a MIS-based combination of BPT and PM will yield a more robust solution than the aforementioned heuristics.
+            * However, such a principled combination has not been shown so far due to important differences in the mathmatical frameworks used to formulate
+            these two algorithms.
+          * In this paper, we present an integration of bidirectional path tracing and photon mapping into a framework that can efficiently handle a wide range 
+          of illumination effects. 
+            * Our new reformulation of photon mapping as a path sampling technique allows us to employ multiple importance sampling to combine the two methods 
+            in a more rubust rendering algorithm that alleviates the problem of insufficient techniques.
         * Vertex Merging 
-          * Our goal is to combine photon mapping (PM) with bidirectional path tracing (BPT) into a more robust algorithm via multiple-importance sampling (MIS). 
-            * The first step is to formulate the two algorithms in a common mathematical language, for which we choose the path integral framework, reviewed above.
-            * We refer to the path sampling techniques derived from PM as vertex merging (VM), as one can intuitively think of the radiance estimate (5) as mergin the path vertices correspondng to a photon and the radiance estimate ocation within a small neighborhood. 
-          
+          * Our goal is to combine photon mapping (PM) with bidirectional path tracing (BPT) into a more robust algorithm via multiple-importance sampling (MIS).
+            * Scince BPT is already naturally defined in this framework (MIS-based method), we only need to reformulation the PM algorithm.
+          * This involves defining the light transport paths sampled by PM with their associated pdfs that we could then plug intothe power heuristic. 
+          * PM as a sampling technique for extended paths.
+            * The PM radiance estimate would then then complete a full length-k extened path, which we define as $\bar{x}^* = (x_0, ... , x_s^*, x_s, ..., x_k)$
+          * PM as a sampling techniques for regular paths 
+            * The path $\bar{x}$ is accepted if and only if the photon location $x_s^*$ is within distance $r$ from the radiance estimate location $x_s$.
+          * Path pdf
+            * we first assume constant pdf $p$ inside $A_M$.
+            * Second, we make the common photon mapping assumption that $A_M$ is a disk with radius $r$, and area $\pi r^2$, centered around $x_i$.
+            * $p_{VM}(\bar{x}) = [\pi r^2 p (x_{s-1} \to x_s^*)] p_{VC}(\bar{x})$
+        * Efficiency of Different Path Sampling Techniques 
+          * Sampling densities 
+          * Path reuse efficiency
     * **Mara et al. (2013), "Toward practical real-time photon mapping: Efficient GPU density estimation."**
     * **Davidovič et al. (2014), "Progressive light transport simulation on the GPU: Survey and improvements"**
     * **Evangelou et al. (2021), "Fast radius search exploiting ray tracing frameworks."**
