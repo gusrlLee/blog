@@ -335,6 +335,76 @@
           * Sampling densities 
           * Path reuse efficiency
     * **Mara et al. (2013), "Toward practical real-time photon mapping: Efficient GPU density estimation."**
+      * Takeaways
+        * We describe the design space for real-time photon density estimation, the key step of rendering global 
+        illumination (GI) via photon mapping.
+      * Paper contexts
+        * Introduction
+          * photon mapping contains two steps: 
+            * Tracing photon along rays from light sources 
+            * estimating radiance due to those photon scattering off visible surfaces (i.e. "shading").
+          * Efficient parallel ray tracing hardware and software systems, such as OptiX, can trace hundreds of 
+          millions of rays per second and the process can be amortized over multiple frames. 
+            * Thus existing systems meet the performance needed for photon tracing.
+          * In this paper, we explore the design space of architecture-aware optimization of photon shading 
+          for parallel vector architectures, using a current NVIDIA GPU as a concrete, motivating case.
+          * Why photon mapping ?
+            * Photon mapping is a good candidate for robust, real-time rendering. 
+              * It naturally simulates a range of GI phenomena.
+            * A limitation of photon mapping is that does not capture transport paths that terminate in a series 
+            of perfectly-specular scattering events. 
+            * Those must be ray traced or approximated with screen space technique.
+          * Why fast ? 
+            * Offline global illumination takes minutes to hours to render with current tools.
+            * Fast rendering time $\to$ It will change workflow from render-and-wait to interactive editing 
+            of lighting, materials, and geometry. 
+            * True real-time GI also reduces the amount of pre-baked lighting data that must be managed 
+            throghout development and installed on the consumer's machine, which are significant production and 
+            workflow issues today.
+        * Algorithms
+          * The nodes of that tree are key design choices and the leaves are eight specific algorithms. 
+          * We implemented all of these, named the four best 
+            * 3D Bounds
+            * 2.5D Bounds 
+            * HashGrid
+            * Tiled 
+          * Photon-Major Iteration (Scattering)
+            * This implementation equation for all pixels 
+              * $Eq. = L_s(X, \hat{\omega}_o) \approx \sum_{P \in \mathcal{Q}(X)} \frac{\Phi_P f_X(\hat{\omega}_P, \hat{\omega}_o) \kappa(\|Y_P - X\|)}{\int_0^{2\pi} \int_0^{r_P} \kappa(s) \, d\theta \, ds}$
+              * the inner-loop's per-photon contribution is the summand in Eq.1. 
+              * They rendering bounding geometry about each photon by issuing a draw call for the outer loop.
+              * As with shadow volume and screen-space decal rendering, this leverages the rasterizer as a power 
+              efficient generalized iterator for the inner loop. 
+            * Bounding Geometry
+              * 3D Polyhedral Bounds 
+                * A photon volume is a polyhedron circumscribed about a photon's sphere of effect.
+              * 2.5D Polygonal Bounds
+                * Splatting mehtods ratserize small point primitives for photons with small radii relative to the screen resolution.
+                * This allows to efficiently rasterize bounds for radii varying from very large to very small.
+            * Transformation Stage
+              * Vertex Stage (VS)
+                * One method to render $n$ topologically identical bounding shapes is to submit $n$ instances of 
+                a single bounding shape and then transform the shapes individually in the vertex stage. 
+              * Geometry Stage (GS)
+                * Another method for rendering $n$ bounding shapes is to submit $n$ point primitives to the GPU 
+                and then amplify each into a triangle strip in the geometry stage.
+          * Pixel-Major Iteration (Gathering)
+            * Gather Space 
+              * 3D: HashGrid 
+                * A hash grid is a hash table of sparse grid cells, each of which contains an array of photons.
+                * The renderer iterates over all pixels on the screen and for each one gathers photons by inde-
+                xing the 3D location of a shaded point $X$ into the containing grid cell.
+                * The hash grid is viewer-independent, so it can be used over multiple frames without modifica-
+                tion when the lighting does change.
+              * 2D: Tiles
+                * A tiled algorithm inserts copies of each photons in buckets corresponding to the screen-
+                space tiles it might affect. 
+                * This allowed a second pass to shade allowed a second pass to shade all pixels within a tile
+                from a common subset of photons that fit within shared memory for a compute shader. 
+                * This yields a significant DRAM bandwidth saving.
+            * Sampling Method 
+              * Regular
+              * Stocahstic
     * **Davidovič et al. (2014), "Progressive light transport simulation on the GPU: Survey and improvements"**
     * **Evangelou et al. (2021), "Fast radius search exploiting ray tracing frameworks."**
     * **Kern et al. (2023), "Accelerated photon mapping for hardware-based ray tracing."**
