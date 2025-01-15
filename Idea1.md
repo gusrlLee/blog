@@ -338,6 +338,8 @@
       * Takeaways
         * We describe the design space for real-time photon density estimation, the key step of rendering global 
         illumination (GI) via photon mapping.
+        * Tile based 의 performance 가 좋게 나오는 것을 확인 가능.
+        * photon의 data bit size 를 표기 했음 $\to$ 추후 참고할 것
       * Paper contexts
         * Introduction
           * photon mapping contains two steps: 
@@ -406,9 +408,47 @@
               * Regular
               * Stocahstic
     * **Davidovič et al. (2014), "Progressive light transport simulation on the GPU: Survey and improvements"**
+      * Survey paper!
+      * Path tracing, bidirectional path tracing, photon mapping에 대한 기본적인 algorithm에 대한 설명이 있음.
     * **Evangelou et al. (2021), "Fast radius search exploiting ray tracing frameworks."**
-    * **Kern et al. (2023), "Accelerated photon mapping for hardware-based ray tracing."**
+      * Takesaways
+        * HW 에서 사용가능한 Ray Tracing accelerating method 를 Radius 를 searching 하는데 응용한 기술을 보여준다.
+        * 
+      * Paper contents
+        * Introduction 
+          * all these operations about point clouds can introduce a significant computational overhead,, an issue that needs to be addressed in order to allow 
+          for fast performance and scalability of the intended application.
+          * Building high-quality data structures directly translates to higher query performance but generally impacts construction time negatively.
+          * in this paper, we demonstrate how to leverage a highly-optimized existing ray-tracing framework in order to efficiently map the radius-search task
+          to ray traversal. 
+            * Central to our approach is the idea of relating the query radius with samples and, as a result, treating them as regular primitives of known bounds
+            instead of simple points.
+        * Radius Search using Ray Tracing 
+          * A radius-search operation is defined by a set of points $S = \{s_1, s_2, ... \} \subseteq \mathbb{R}^3$ that represent the sample space 
+          * A set of points $Q = \{ q_1, q_2, ...\} \subseteq \mathbb{R}^3$ that encompasses the queries to be performed.
+          * $d(s,q) \le r \to I_s(q) = 1, \;\; otherwise \;\; I_s(q) = 0$ 
+          * $d(s,q)$ is distance function.
+            * $d(s,q) \le \tilde{r} \to I_s(q) = 1, \;\; otherwise \;\; I_s(q) = 0$ 
+            * $\tilde{r} = \max_{q_i \in Q} (r_i)$
+              * A subsequent rejection step is then performed $d(s_j, q_i) \le r_i$
+          * Internal structure and indexing mechanics of trees built by modern BVH algorithms have some additional beneficial characteristics, aside from the 
+          parallel construction.
+            * First, the spatial coherence near the leaves offers infrequent tree-level changes on te loewr tree lower tree levels during traversal.
+            * Second, since the input samples have relatively small bound extents, defects arising from node overlap during node splitting are less frequent.
+            * Especially when the radius takes relatively small values and is progressively reduced, as is the case in progressive variants of photon mapping.
+        * Radius Search via Ray Tracing 
+          * First, an aixs-aligned bounding box (AABB) is constructed for every sample $s_j$  based on $\tilde{r}$ and forwarded for a regular BVH tree consturction.
+          * Second, for each query $q_i$, a ray is defined with origin at $q_i$ and an infinitesimal ray extent.
+          * Since sample AABBs that are potentially within range of $r_i$ must enclose it, by definition of our problem, the ray will eventually reach the leaves 
+          and correctly classify potential in-radius samples $s_j$ accroding to $d(s_J, q_i)$.
+    * **Kern et al. (2023), "Accelerating photon mapping for hardware-based ray tracing."**
+    * **McGuire and Luebke (2009), Hardware-Accelerated Global Illumination by Image Space Photon Mapping.**
     * **Kim et al. (2019), "Caustics using screen-space photon mapping." -> Ray tracing Gems I book**
+      * Takeaways
+        * Photon mapping is a global illumination technique for rendering caustics and indirect lighting by simulating the transportation of photons emitted from 
+        the light.
+        * This chapter introduces a technique to render caustics with photon mapping in screen space with hardware ray tracing and a screen-space denoiser in 
+        real time.
     * **Yang and Ouyang (2021), "Real-time ray traced caustics." -> Ray tracing Gems II book**
 
   * Reservoir Resampling. 
