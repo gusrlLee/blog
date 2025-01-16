@@ -442,6 +442,40 @@
           * Since sample AABBs that are potentially within range of $r_i$ must enclose it, by definition of our problem, the ray will eventually reach the leaves 
           and correctly classify potential in-radius samples $s_j$ accroding to $d(s_J, q_i)$.
     * **Kern et al. (2023), "Accelerating photon mapping for hardware-based ray tracing."**
+      * Takesaways
+        * a progressive photon mapper optimized for ray tracing hardware that uses the idea of fast radius search[Evangelou et al. (2021)].
+        * two novel techniques that speed up the progressive photon mapper 
+          * Photon Culling 
+          * Stocahstic Evaluation
+        * Source code : [https://github.com/SirKero/RTProgressivePhotonMapper](https://github.com/SirKero/RTProgressivePhotonMapper)
+      * Paper contents
+        * Introduction
+          * Photon mapping is a two-path algorithm that is split into photon generation and collection phases.
+            * Photons are distributed from light sources and ray-traced through the scene for photon generation. 
+          * We describe a progressive photon mapper optimized for ray tracing hardware that uses the idea of fast radius search to collect the photons.
+            * ==Evangelou et al. (2021)== 논문을 참고 
+          * In addition, we introduce two novel techniques 
+            * One is Photon culling, where photons outside our camera view are note stored, reducing the acceleration structure build time for large and complex 
+            scenes, especially when large parts of the scene are not visible from the caemra view.
+            * The other is Stocahstic Evaluation, where we only evaluate a small number of photons stochastically to reduce the number of lighting calculations.
+        * Photon Culling 
+          * Photon Culling is our first novel addition, where we want to exclude all non-visibile photons using the first diffuse surface hit from surface hit 
+          from the camera.
+          * Acceleration structure build times are reduced by Photon Culling, especially in larger and more complex scenes where many photons are not visible 
+          to the camera. 
+          * we can use a hash grid to store where the first diffuse surface hit took place. In contrast to SPPM, we do not need the complete hit information 
+          because we only want to know if a photon should be stored.
+          * Therefore, we can use a binary mask and mark the hash cells corresponding to the first diffuse surface hits from the camera perspective.
+            * In the Photon Generation pass, we can then calculate the hash cell corresponding to the photon's position to determine if the photon should 
+            be stored in the photon map.
+        * Stocahstic Evaluation
+          * Stocahstic Evaluation is our second novel technique to speed up RTPM in areas with high photon density. 
+          * We want to reduce the impact of the high photon density area by only evaluating the BSDF for a small number of photons stochastically. 
+            * However, we still need to collect all photons via ray tracing to correctly weight the exitant radiance in the end.
+          * We set a fixed number of photons that are evaluated at the end of the collection process. Additionally, we need a counter to track the total number 
+          of photons collected for this pixel.
+
+
     * **McGuire and Luebke (2009), Hardware-Accelerated Global Illumination by Image Space Photon Mapping.**
     * **Kim et al. (2019), "Caustics using screen-space photon mapping." -> Ray tracing Gems I book**
       * Takeaways
