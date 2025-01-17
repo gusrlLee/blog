@@ -474,8 +474,6 @@
             * However, we still need to collect all photons via ray tracing to correctly weight the exitant radiance in the end.
           * We set a fixed number of photons that are evaluated at the end of the collection process. Additionally, we need a counter to track the total number 
           of photons collected for this pixel.
-
-
     * **McGuire and Luebke (2009), Hardware-Accelerated Global Illumination by Image Space Photon Mapping.**
     * **Kim et al. (2019), "Caustics using screen-space photon mapping." -> Ray tracing Gems I book**
       * Takeaways
