@@ -475,6 +475,34 @@
           * We set a fixed number of photons that are evaluated at the end of the collection process. Additionally, we need a counter to track the total number 
           of photons collected for this pixel.
     * **McGuire and Luebke (2009), Hardware-Accelerated Global Illumination by Image Space Photon Mapping.**
+      * Takesaways
+        * CPU-GPU hybrid method 를 사용했다는 점이 키 포인트
+        * Photon map을 사용하지 않고 Image 를 이용하여 rendering 을 진행!
+      * Paper contents
+        * We introduce Image Space Photon Mapping (ISPM), a complete, consistent, and 
+        efficient solution to the redering equation for point and directional lights 
+        with a pinhole camera.
+        * We introduce the bounce map, which accelerates the initial bounce, and the photon 
+        volume, which accelerates the radiance estimation on the final bounce.
+        * ISPM algorithm
+          * Rasterize the scene from the eye to create a screen space deferred-shading G-
+          buffer.
+          * For each light, rasterize a bounce map in light space.
+          * Advance bounced photons by world-space ray tracing.
+          * Scatter the final photons in screen space, invoking illumination on the G-buffer
+          by rasterizing photon volumes.
+        * Algorithm Details 
+          * For each emitter: 
+            * Render Shadow map 
+            * Render G-buffer from the emitter's view.
+            * Emit photons, bounce once, and store in a bounce map.
+            * ==(CPU)== Continue tracing bounce map photons through the scene until absorption, 
+            storing them before each bounce in the photon map.
+          * Render G-buffer from the eye's view.
+          * Compute direct illumination using shadow maps and deferred shading of the eye G-buffer.
+          * Render indirect illumination by scattering photon volumes.
+          * Render translucent surfaces back-to-front with direct, mirror, and refracted 
+          illumination only.
     * **Kim et al. (2019), "Caustics using screen-space photon mapping." -> Ray tracing Gems I book**
       * Takeaways
         * Photon mapping is a global illumination technique for rendering caustics and indirect lighting by simulating the transportation of photons emitted from 
