@@ -1,2 +1,12 @@
-title: Hyeon-ki Lee
 theme: jekyll-theme-minimal
+
+title: Hyeon-ki Lee
+description: Hyeon-ki World!
+navigation: True
+subscribers: True
+
+disqus: True
+disqus_shortname: xxxxxxxx
+
+
+permalink: /:title
