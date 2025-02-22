@@ -1,0 +1,28 @@
+markdown: kramdown
+owner:
+  name: Hyeon-ki Lee
+  email: gusrl3204@gmail.com
+
+
+paginate: 20
+url: https://gusrlLee.github.io
+
+title: Hyeon-ki's Blog
+
+description: Hyeon-ki world
+
+
+production_url: https://gusrlLee.github.io
+
+navigation: True
+
+subscribers: True
+
+disqus: True
+disqus_shortname: xxxxxxxx
+
+google_analytics:
+
+
+safe: False
+lsi: False
