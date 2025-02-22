@@ -26,3 +26,5 @@ google_analytics:
 
 safe: False
 lsi: False
+
+theme: minima
